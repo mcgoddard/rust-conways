@@ -2,6 +2,7 @@ extern crate getopts;
 
 use getopts::Options;
 use std::env;
+use std::str;
 
 fn print_usage(program: &str, opts: Options) {
 	let brief = format!("Usage: {} OUTPUT_DIR [options]", program);
@@ -25,11 +26,13 @@ fn main() {
 		Ok(m) => { m }
 		Err(f) => { panic!(f.to_string()) }
 	};
+	// Check for help request
 	if matches.opt_present("h") {
 		print_usage(&program, opts);
 		return;
 	}
-	let iterations = match matches.opt_str("n") {
+	// Parse number of iterations to run
+	let iterations_str = match matches.opt_str("n") {
 		Some(s) => { s }
 		None => {
 			println!("Required parameter 'iterations' missing");
@@ -37,6 +40,14 @@ fn main() {
 			return;
 		}
 	};
+	let iterations = match iterations_str.parse::<u32>() {
+		Ok(i) => i,
+		Err(err) => {
+			println!("Invalid value for iterations (flag 'i'):\n{}\n", err);
+			return;
+		}
+	};
+	// Parse output dir
 	let output = if !matches.free.is_empty() {
 		matches.free[0].clone()
 	} else {
@@ -44,4 +55,36 @@ fn main() {
 	    print_usage(&program, opts);
 	    return;
 	};
+	// TODO: Determine if using input file or random grid
+	// Handle random starting grid
+	// Parse height and width of grid
+	let height_str = match matches.opt_str("t") {
+	    Some(expr) => expr,
+	    None => String::from("None"),
+	};
+	let height: u32 = match height_str.parse::<u32>() {
+		Ok(h) => h,
+		Err(err) => {
+			println!("Invalid value for height (flag 't'):\n{}\n", err);
+			return;
+		}
+	};
+	let width_str = match matches.opt_str("w") {
+		Some(expr) => expr,
+		None => String::from("None"),
+	};
+	let width: u32 = match width_str.parse::<u32>() {
+		Ok(w) => w,
+		Err(err) => {
+			println!("Invalid value for width (flag 'w'):\n{}\n", err);
+			return;
+		}
+	};
+	// Output parsed values
+	println!("Output directory set to: {}", output);
+	println!("Iterations set to: {}", iterations);
+	println!("Grid height set to: {}", height);
+	println!("Grid width set to: {}", width);
+	// TODO: Generation random grid
+	// TODO: Run simulation
 }
