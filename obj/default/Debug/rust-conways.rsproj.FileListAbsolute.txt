@@ -1,3 +1,0 @@
-C:\Users\mike\Projects\rust-conways\target\Debug\rust_conways.exe
-C:\Users\mike\Projects\rust-conways\obj\default\Debug\rust-conways.rsprojResolveAssemblyReference.cache
-C:\Users\mike\Projects\rust-conways\obj\default\Debug\rust_conways.exe
