@@ -9,6 +9,13 @@ fn print_usage(program: &str, opts: Options) {
 	print!("{}", opts.usage(&brief));
 }
 
+#[derive(Clone)]
+enum CellState
+{
+	Dead,
+	Alive
+}
+
 fn main() {
 	// Define args
 	let args: Vec<String> = env::args().collect();
@@ -62,7 +69,7 @@ fn main() {
 	    Some(expr) => expr,
 	    None => String::from("None"),
 	};
-	let height: u32 = match height_str.parse::<u32>() {
+	let height: usize = match height_str.parse::<usize>() {
 		Ok(h) => h,
 		Err(err) => {
 			println!("Invalid value for height (flag 't'):\n{}\n", err);
@@ -73,13 +80,15 @@ fn main() {
 		Some(expr) => expr,
 		None => String::from("None"),
 	};
-	let width: u32 = match width_str.parse::<u32>() {
+	let width: usize = match width_str.parse::<usize>() {
 		Ok(w) => w,
 		Err(err) => {
 			println!("Invalid value for width (flag 'w'):\n{}\n", err);
 			return;
 		}
 	};
+	// Generate grid
+	let mut grid = vec![vec![CellState::Dead; width]; height];
 	// Output parsed values
 	println!("Output directory set to: {}", output);
 	println!("Iterations set to: {}", iterations);
