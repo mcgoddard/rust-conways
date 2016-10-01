@@ -1,8 +1,10 @@
 extern crate getopts;
+extern crate rand;
 
-use getopts::Options;
 use std::env;
 use std::str;
+use getopts::Options;
+use rand::Rng;
 
 fn print_usage(program: &str, opts: Options) {
 	let brief = format!("Usage: {} OUTPUT_DIR [options]", program);
@@ -10,6 +12,7 @@ fn print_usage(program: &str, opts: Options) {
 }
 
 #[derive(Clone)]
+#[derive(Debug)]
 enum CellState
 {
 	Dead,
@@ -88,12 +91,27 @@ fn main() {
 		}
 	};
 	// Generate grid
-	let mut grid = vec![vec![CellState::Dead; width]; height];
-	// Output parsed values
-	println!("Output directory set to: {}", output);
-	println!("Iterations set to: {}", iterations);
-	println!("Grid height set to: {}", height);
-	println!("Grid width set to: {}", width);
-	// TODO: Generation random grid
+	let mut grid = Vec::new();
+	// Generation random grid
+	for _ in 0..height {
+		let mut row = Vec::new();
+		for _ in 0..width {
+			let rn = rand::thread_rng().gen_range(0, 2);
+			let cell = match rn {
+				0 => CellState::Dead,
+				1 => CellState::Alive,
+				_ => panic!("Somehow got a incorrect random number!?")
+			};
+			row.push(cell);
+		}
+		grid.push(row);
+	}
+	// Print starting grid
+	for row in grid {
+		for cell in row {
+			print!("{:?}, ", cell);
+		}
+		println!("");
+	}
 	// TODO: Run simulation
 }
