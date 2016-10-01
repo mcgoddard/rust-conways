@@ -1,3 +1,5 @@
+mod simulation;
+
 extern crate getopts;
 extern crate rand;
 
@@ -5,18 +7,11 @@ use std::env;
 use std::str;
 use getopts::Options;
 use rand::Rng;
+use simulation::CellState;
 
 fn print_usage(program: &str, opts: Options) {
 	let brief = format!("Usage: {} OUTPUT_DIR [options]", program);
 	print!("{}", opts.usage(&brief));
-}
-
-#[derive(Clone)]
-#[derive(Debug)]
-enum CellState
-{
-	Dead,
-	Alive
 }
 
 fn main() {
