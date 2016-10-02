@@ -12,11 +12,23 @@ pub struct Simulator {
 	width: usize,
 	output_dir: String,
 	starting_states: Vec<Vec<CellState>>,
-	//current_states: Vec<Vec<Cell>>,
 	current_iteration: u32,
 }
 
 impl<'a> Simulator {
+	pub fn new(iteration_num: u32, output_dir: String, 
+		starting_states: Vec<Vec<CellState>>) -> Simulator {
+		// TODO: modify so starting_states dimensions are correct
+		Simulator {
+			iteration_num: iteration_num,
+			height: starting_states.len(),
+			width: starting_states[0].len(),
+			output_dir: output_dir,
+			starting_states: starting_states,
+			current_iteration: 0,
+		}
+	}
+
 	pub fn run_simulation(&mut self) {
 		// Set up first cells
 		let mut current_states = Vec::new();

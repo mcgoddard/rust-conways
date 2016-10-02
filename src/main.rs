@@ -8,6 +8,7 @@ use std::str;
 use getopts::Options;
 use rand::Rng;
 use simulation::CellState;
+use simulation::Simulator;
 
 fn print_usage(program: &str, opts: Options) {
 	let brief = format!("Usage: {} OUTPUT_DIR [options]", program);
@@ -102,11 +103,13 @@ fn main() {
 		grid.push(row);
 	}
 	// Print starting grid
-	for row in grid {
+	for row in grid.clone() {
 		for cell in row {
 			print!("{:?}, ", cell);
 		}
 		println!("");
 	}
 	// TODO: Run simulation
+	let mut sim = Simulator::new(iterations, output, grid);
+	sim.run_simulation();
 }
