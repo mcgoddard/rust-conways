@@ -13,5 +13,11 @@ pub struct Simulator<'a> {
 	output_dir: String,
 	starting_states: Vec<Vec<CellState>>,
 	current_states: &'a mut Vec<Vec<CellState>>,
-	current_iteration: &'a mut u32,
+	current_iteration: u32,
+}
+
+impl<'a> Simulator<'a> {
+	fn run_simulation() {
+		
+	}
 }
