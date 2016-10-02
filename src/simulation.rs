@@ -18,7 +18,7 @@ pub struct Simulator {
 impl<'a> Simulator {
 	pub fn new(iteration_num: u32, output_dir: String, 
 		starting_states: Vec<Vec<CellState>>) -> Simulator {
-		// TODO: modify so starting_states dimensions are correct
+		// TODO: modify so starting_states dimensions are verified correct
 		Simulator {
 			iteration_num: iteration_num,
 			height: starting_states.len(),
@@ -44,6 +44,7 @@ impl<'a> Simulator {
 			current_states.push(row);
 		}
 		loop {
+			println!("");
 			// Create new states
 			let mut new_states = Vec::new();
 			for x in 0..self.height {
@@ -57,7 +58,16 @@ impl<'a> Simulator {
 			}
 			// Set current states
 			current_states = new_states;
-			// TODO Output
+			// TODO: Output
+			// DEBUG: print current states
+			let debug_states = current_states.clone();
+			println!("States at end of iteration: {}", self.current_iteration);
+			for row in debug_states.clone() {
+				for cell in row {
+					print!("{:?}, ", cell.state);
+				}
+				println!("");
+			}
 			// Increment iteration
 			self.current_iteration += 1;
 			if self.current_iteration == self.iteration_num {
@@ -76,8 +86,12 @@ struct Cell {
 
 impl Cell {
 	fn iterate(self, prev_state: &Vec<Vec<Cell>>) -> Cell {
+		// TODO: write rules for Conways Game of Life
 		return Cell {
-			state: self.state,
+			state: match self.state {
+				CellState::Dead => CellState::Alive,
+				CellState::Alive => CellState::Dead,
+			},
 			row: self.row,
 			col: self.col,
 		};
