@@ -37,7 +37,8 @@ impl<'a> Simulator {
 			for x in 0..self.height {
 				let mut new_row = Vec::new();
 				for y in 0..self.width {
-					let new_cell = current_states[x][y].iterate(&current_states);
+					let cell = current_states[x][y].clone();
+					let new_cell = cell.iterate(&current_states);
 					new_row.push(new_cell);
 				}
 				new_states.push(new_row);
