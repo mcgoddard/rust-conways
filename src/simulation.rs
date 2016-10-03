@@ -84,40 +84,38 @@ impl<'a> Simulator {
 			// Set current states
 			current_states = new_states;
 			// Output
-			let path = Path::new(&self.output_dir);
-			let path = path.join(format!("{}.csv", self.current_iteration));
-			let mut file = match fs::File::create(&path) {
-			    Err(why) => panic!("couldn't create {}: {}",
-			                       path.display(), why.description()),
-			    Ok(file) => file,
-			};
-			for row in &current_states {
-				let mut row_str: String = row.iter().map(|c| match c.state {
-					CellState::Dead => "0",
-					CellState::Alive => "1",
-				}).collect::<Vec<&str>>().join(",");
-				row_str.push('\n');
-				match file.write_all(row_str.as_bytes()) {
-			        Err(why) => {
-			            panic!("couldn't write to {}: {}", path.display(),
-	                           why.description())
-			        },
-			        Ok(_) => {},
-			    }
+			{
+				let current_states = &current_states;
+				self.output(current_states);
 			}
-			// DEBUG: print current states
-			// let debug_states = current_states.clone();
-			// println!("States at end of iteration: {}", self.current_iteration);
-			// for row in debug_states.clone() {
-			// 	for cell in row {
-			// 		print!("{:?}, ", cell.state);
-			// 	}
-			// 	println!("");
-			// }
 			// Increment iteration
 			self.current_iteration += 1;
 			if self.current_iteration == self.iteration_num {
 				break;
+			}
+		}
+	}
+
+	fn output(&mut self, current_states: &Vec<Vec<Cell>>) {
+		let path = Path::new(&self.output_dir);
+		let path = path.join(format!("{}.csv", self.current_iteration));
+		let mut file = match fs::File::create(&path) {
+			Err(why) => panic!("couldn't create {}: {}",
+								path.display(), why.description()),
+			Ok(file) => file,
+		};
+		for row in current_states {
+			let mut row_str: String = row.iter().map(|c| match c.state {
+				CellState::Dead => "0",
+				CellState::Alive => "1",
+			}).collect::<Vec<&str>>().join(",");
+			row_str.push('\n');
+			match file.write_all(row_str.as_bytes()) {
+				Err(why) => {
+					panic!("couldn't write to {}: {}", path.display(),
+						   why.description())
+				},
+				Ok(_) => {},
 			}
 		}
 	}

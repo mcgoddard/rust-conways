@@ -58,15 +58,15 @@ fn main() {
 		matches.free[0].clone()
 	} else {
 		println!("Required argument OUTPUT_DIR missing\n");
-	    print_usage(&program, opts);
-	    return;
+		print_usage(&program, opts);
+		return;
 	};
 	// TODO: Determine if using input file or random grid
 	// Handle random starting grid
 	// Parse height and width of grid
 	let height_str = match matches.opt_str("t") {
-	    Some(expr) => expr,
-	    None => String::from("None"),
+		Some(expr) => expr,
+		None => String::from("None"),
 	};
 	let height: usize = match height_str.parse::<usize>() {
 		Ok(h) => h,
