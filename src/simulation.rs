@@ -18,7 +18,15 @@ pub struct Simulator {
 impl<'a> Simulator {
 	pub fn new(iteration_num: u32, output_dir: String, 
 		starting_states: Vec<Vec<CellState>>) -> Simulator {
-		// TODO: modify so starting_states dimensions are verified correct
+		if starting_states.len() < 1 {
+			panic!("not enough rows");
+		}
+		let row_length = starting_states[0].len();
+		for row in &starting_states {
+			if row.len() != row_length {
+				panic!("row lengths do not match");
+			}
+		}
 		Simulator {
 			iteration_num: iteration_num,
 			height: starting_states.len(),
