@@ -2,7 +2,6 @@ use std::error::Error;
 use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
-use std::fmt;
 
 #[derive(Clone)]
 #[derive(Debug)]
@@ -57,18 +56,7 @@ impl<'a> Simulator {
 
 	pub fn run_simulation(&mut self) {
 		// Set up first cells
-		let mut current_states = Vec::new();
-		for x in 0..self.starting_states.len() {
-			let mut row = Vec::new();
-			for y in 0..self.starting_states[x].len() {
-				row.push(Cell {
-					state: self.starting_states[x][y].clone(),
-					row: x,
-					col: y,
-				});
-			}
-			current_states.push(row);
-		}
+		let mut current_states = self.create_initial_states();
 		loop {
 			// Create new states
 			let mut new_states = Vec::new();
@@ -94,6 +82,22 @@ impl<'a> Simulator {
 				break;
 			}
 		}
+	}
+
+	fn create_initial_states(&mut self) -> Vec<Vec<Cell>> {
+		let mut states = Vec::new();
+		for x in 0..self.starting_states.len() {
+			let mut row = Vec::new();
+			for y in 0..self.starting_states[x].len() {
+				row.push(Cell {
+					state: self.starting_states[x][y].clone(),
+					row: x,
+					col: y,
+				});
+			}
+			states.push(row);
+		}
+		return states;
 	}
 
 	fn output(&mut self, current_states: &Vec<Vec<Cell>>) {
