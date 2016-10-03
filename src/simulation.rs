@@ -1,3 +1,9 @@
+use std::error::Error;
+use std::fs;
+use std::io::prelude::*;
+use std::path::Path;
+use std::fmt;
+
 #[derive(Clone)]
 #[derive(Debug)]
 pub enum CellState
@@ -18,6 +24,7 @@ pub struct Simulator {
 impl<'a> Simulator {
 	pub fn new(iteration_num: u32, output_dir: String, 
 		starting_states: Vec<Vec<CellState>>) -> Simulator {
+		// Check input data
 		if starting_states.len() < 1 {
 			panic!("not enough rows");
 		}
@@ -27,6 +34,17 @@ impl<'a> Simulator {
 				panic!("row lengths do not match");
 			}
 		}
+		// Check input directory
+		if !fs::metadata(&output_dir).is_ok() {
+			match fs::create_dir_all(&output_dir) {
+				Ok(_) => {},
+				Err(e) => {
+					panic!("output directory did not exist and cannot be created: {}",
+						e.description());
+				}
+			}
+		}
+		// Assign struct
 		Simulator {
 			iteration_num: iteration_num,
 			height: starting_states.len(),
@@ -52,7 +70,6 @@ impl<'a> Simulator {
 			current_states.push(row);
 		}
 		loop {
-			println!("");
 			// Create new states
 			let mut new_states = Vec::new();
 			for x in 0..self.height {
@@ -66,16 +83,37 @@ impl<'a> Simulator {
 			}
 			// Set current states
 			current_states = new_states;
-			// TODO: Output
-			// DEBUG: print current states
-			let debug_states = current_states.clone();
-			println!("States at end of iteration: {}", self.current_iteration);
-			for row in debug_states.clone() {
-				for cell in row {
-					print!("{:?}, ", cell.state);
-				}
-				println!("");
+			// Output
+			let path = Path::new(&self.output_dir);
+			let path = path.join(format!("{}.csv", self.current_iteration));
+			let mut file = match fs::File::create(&path) {
+			    Err(why) => panic!("couldn't create {}: {}",
+			                       path.display(), why.description()),
+			    Ok(file) => file,
+			};
+			for row in &current_states {
+				let mut row_str: String = row.iter().map(|c| match c.state {
+					CellState::Dead => "0",
+					CellState::Alive => "1",
+				}).collect::<Vec<&str>>().join(",");
+				row_str.push('\n');
+				match file.write_all(row_str.as_bytes()) {
+			        Err(why) => {
+			            panic!("couldn't write to {}: {}", path.display(),
+	                           why.description())
+			        },
+			        Ok(_) => {},
+			    }
 			}
+			// DEBUG: print current states
+			// let debug_states = current_states.clone();
+			// println!("States at end of iteration: {}", self.current_iteration);
+			// for row in debug_states.clone() {
+			// 	for cell in row {
+			// 		print!("{:?}, ", cell.state);
+			// 	}
+			// 	println!("");
+			// }
 			// Increment iteration
 			self.current_iteration += 1;
 			if self.current_iteration == self.iteration_num {

@@ -102,14 +102,6 @@ fn main() {
 		}
 		grid.push(row);
 	}
-	// DEBUG: Print starting grid
-	println!("Starting states:");
-	for row in grid.clone() {
-		for cell in row {
-			print!("{:?}, ", cell);
-		}
-		println!("");
-	}
 	// Run simulation
 	let mut sim = Simulator::new(iterations, output, grid);
 	sim.run_simulation();
