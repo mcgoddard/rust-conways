@@ -15,6 +15,24 @@ fn print_usage(program: &str, opts: Options) {
 	print!("{}", opts.usage(&brief));
 }
 
+fn generate_grid(height: usize, width: usize) -> Vec<Vec<CellState>> {
+	let mut grid = Vec::new();
+	for _ in 0..height {
+		let mut row = Vec::new();
+		for _ in 0..width {
+			let rn = rand::thread_rng().gen_range(0, 2);
+			let cell = match rn {
+				0 => CellState::Dead,
+				1 => CellState::Alive,
+				_ => panic!("Somehow got a incorrect random number!?")
+			};
+			row.push(cell);
+		}
+		grid.push(row);
+	}
+	return grid;
+}
+
 fn main() {
 	// Define args
 	let args: Vec<String> = env::args().collect();
@@ -86,22 +104,8 @@ fn main() {
 			return;
 		}
 	};
-	// Generate grid
-	let mut grid = Vec::new();
 	// Generation random grid
-	for _ in 0..height {
-		let mut row = Vec::new();
-		for _ in 0..width {
-			let rn = rand::thread_rng().gen_range(0, 2);
-			let cell = match rn {
-				0 => CellState::Dead,
-				1 => CellState::Alive,
-				_ => panic!("Somehow got a incorrect random number!?")
-			};
-			row.push(cell);
-		}
-		grid.push(row);
-	}
+	let grid = generate_grid(height, width);
 	// Run simulation
 	let mut sim = Simulator::new(iterations, output, grid);
 	sim.run_simulation();
