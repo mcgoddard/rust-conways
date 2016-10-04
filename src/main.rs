@@ -5,6 +5,10 @@ extern crate rand;
 
 use std::env;
 use std::str;
+use std::path::Path;
+use std::fs::File;
+use std::io::BufReader;
+use std::io::BufRead;
 use getopts::Options;
 use rand::Rng;
 use simulation::CellState;
@@ -33,6 +37,32 @@ fn generate_grid(height: usize, width: usize) -> Vec<Vec<CellState>> {
 	return grid;
 }
 
+fn parse_input_file(path: &Path) -> Vec<Vec<CellState>> {
+	match File::open(&path) {
+		Ok(file) => {
+			let input_file = BufReader::new(file);
+			let mut grid: Vec<Vec<CellState>> = Vec::new();
+			for line in input_file.lines().filter_map(|result| result.ok()) {
+				let chars = line.split(",");
+				let mut row: Vec<CellState> = Vec::new();
+				for cell in chars {
+					let c: CellState = match cell {
+						"0" => CellState::Dead,
+						"1" => CellState::Alive,
+						_ => panic!("Invalid value in input file")
+					};
+					row.push(c);
+				}
+				grid.push(row);
+			}
+			grid
+		},
+		Err(e) => {
+			panic!("Could not open input file: {}", e);
+		}
+	}
+}
+
 fn main() {
 	// Define args
 	let args: Vec<String> = env::args().collect();
@@ -44,6 +74,8 @@ fn main() {
 	opts.optopt("t", "height", "Provide a height for the grid", "HEIGHT");
 	opts.optopt("n", "interations", "Provide the number of iterations to run", 
 		"ITERATIONS");
+	opts.optopt("i", "input_file", "Provide a file containing the initial state",
+		"INPUT_FILE");
 
 	// Parse args
 	let matches = match opts.parse(&args[1..]) {
@@ -79,33 +111,35 @@ fn main() {
 		print_usage(&program, opts);
 		return;
 	};
-	// TODO: Determine if using input file or random grid
-	// Handle random starting grid
-	// Parse height and width of grid
-	let height_str = match matches.opt_str("t") {
-		Some(expr) => expr,
-		None => String::from("None"),
-	};
-	let height: usize = match height_str.parse::<usize>() {
-		Ok(h) => h,
-		Err(err) => {
-			println!("Invalid value for height (flag 't'):\n{}\n", err);
-			return;
+	// Create starting states
+	let grid: Vec<Vec<CellState>> = match matches.opt_str("i") {
+		Some(i) => {
+			// An input file is specified
+			let path = Path::new(&i);
+			parse_input_file(path)
+		},
+		None => {
+			// Parse height and width of grid
+			let height_str = match matches.opt_str("t") {
+				Some(expr) => expr,
+				None => String::from("None"),
+			};
+			let height: usize = match height_str.parse::<usize>() {
+				Ok(h) => h,
+				Err(err) => panic!("Invalid value for height (flag 't'):\n{}\n", err)
+			};
+			let width_str = match matches.opt_str("w") {
+				Some(expr) => expr,
+				None => String::from("None"),
+			};
+			let width: usize = match width_str.parse::<usize>() {
+				Ok(w) => w,
+				Err(err) => panic!("Invalid value for width (flag 'w'):\n{}\n", err)
+			};
+			// Generation random grid
+			generate_grid(height, width)
 		}
 	};
-	let width_str = match matches.opt_str("w") {
-		Some(expr) => expr,
-		None => String::from("None"),
-	};
-	let width: usize = match width_str.parse::<usize>() {
-		Ok(w) => w,
-		Err(err) => {
-			println!("Invalid value for width (flag 'w'):\n{}\n", err);
-			return;
-		}
-	};
-	// Generation random grid
-	let grid = generate_grid(height, width);
 	// Run simulation
 	let mut sim = Simulator::new(iterations, output, grid);
 	sim.run_simulation();

@@ -134,7 +134,6 @@ struct Cell {
 
 impl Cell {
 	fn iterate(self, prev_state: &Vec<Vec<Cell>>) -> Cell {
-		// TODO: write rules for Conways Game of Life
 		let alive_neighbours = self.count_alive_neighbours(prev_state);
 		return Cell {
 			state: self.conways_rules(alive_neighbours),
