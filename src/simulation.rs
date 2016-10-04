@@ -146,8 +146,11 @@ impl Cell {
 		let mut alive_neighbours: usize = 0;
 		for x in 0..3 {
 			for y in 0..3 {
-				if (self.row > 0) &&  (self.row + x < prev_state.len()) &&
-					(self.col > 0) && (self.col + y < prev_state[0].len()) {
+				if (x != 1 || y != 1) &&
+					((((self.row > 0) && ((self.row + 1) < prev_state.len())) ||
+					(((self.row == 0) && (x > 0)) || ((self.row + 1) == prev_state.len() && (x < 2)))) &&
+					(((self.col > 0) && (self.col + 1 < prev_state[0].len())) ||
+					(((self.col == 0) && (y > 0)) || (((self.col + 1) == prev_state[0].len()) && (y < 2))))) {
 					let n_x: usize = self.row + x - 1;
 					let n_y: usize = self.col + y - 1;
 					alive_neighbours = match prev_state[n_x][n_y].state {
