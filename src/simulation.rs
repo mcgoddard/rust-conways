@@ -135,13 +135,48 @@ struct Cell {
 impl Cell {
 	fn iterate(self, prev_state: &Vec<Vec<Cell>>) -> Cell {
 		// TODO: write rules for Conways Game of Life
+		let alive_neighbours = self.count_alive_neighbours(prev_state);
 		return Cell {
-			state: match self.state {
-				CellState::Dead => CellState::Alive,
-				CellState::Alive => CellState::Dead,
-			},
+			state: self.conways_rules(alive_neighbours),
 			row: self.row,
 			col: self.col,
 		};
+	}
+
+	fn count_alive_neighbours(&self, prev_state: &Vec<Vec<Cell>>) -> usize {
+		let mut alive_neighbours: usize = 0;
+		for x in 0..3 {
+			for y in 0..3 {
+				if (self.row > 0) &&  (self.row + x < prev_state.len()) &&
+					(self.col > 0) && (self.col + y < prev_state[0].len()) {
+					let n_x: usize = self.row + x - 1;
+					let n_y: usize = self.col + y - 1;
+					alive_neighbours = match prev_state[n_x][n_y].state {
+						CellState::Alive => alive_neighbours + 1,
+						CellState::Dead => alive_neighbours
+					}
+				}
+			}
+		}
+		return alive_neighbours;
+	}
+
+	fn conways_rules(&self, alive_neighbours: usize) -> CellState {
+		match self.state {
+			CellState::Alive => {
+				if alive_neighbours < 2 || alive_neighbours > 3 {
+					CellState::Dead
+				} else {
+				    CellState::Alive
+				}
+			},
+			CellState::Dead => {
+				if alive_neighbours == 3 {
+					CellState::Alive
+				} else {
+				    CellState::Dead
+				}
+			}
+		}
 	}
 }
