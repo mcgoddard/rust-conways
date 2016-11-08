@@ -76,6 +76,7 @@ fn main() {
 		"ITERATIONS");
 	opts.optopt("i", "input_file", "Provide a file containing the initial state",
 		"INPUT_FILE");
+	opts.optopt("o", "output_dir", "Provide a directory for output", "OUTPUT_DIR");
 
 	// Parse args
 	let matches = match opts.parse(&args[1..]) {
@@ -104,13 +105,14 @@ fn main() {
 		}
 	};
 	// Parse output dir
-	let output = if !matches.free.is_empty() {
-		matches.free[0].clone()
-	} else {
-		println!("Required argument OUTPUT_DIR missing\n");
-		print_usage(&program, opts);
-		return;
-	};
+	let output = matches.opt_str("o");
+	// let output = if !matches.free.is_empty() {
+	// 	matches.free[0].clone()
+	// } else {
+	// 	println!("Required argument OUTPUT_DIR missing\n");
+	// 	print_usage(&program, opts);
+	// 	return;
+	// };
 	// Create starting states
 	let grid: Vec<Vec<CellState>> = match matches.opt_str("i") {
 		Some(i) => {

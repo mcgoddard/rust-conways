@@ -15,13 +15,13 @@ pub struct Simulator {
 	iteration_num: u32,
 	height: usize,
 	width: usize,
-	output_dir: String,
+	output_dir: Option<String>,
 	starting_states: Vec<Vec<CellState>>,
 	current_iteration: u32,
 }
 
 impl<'a> Simulator {
-	pub fn new(iteration_num: u32, output_dir: String, 
+	pub fn new(iteration_num: u32, output_dir: Option<String>, 
 		starting_states: Vec<Vec<CellState>>) -> Simulator {
 		// Check input data
 		if starting_states.len() < 1 {
@@ -34,14 +34,19 @@ impl<'a> Simulator {
 			}
 		}
 		// Check input directory
-		if !fs::metadata(&output_dir).is_ok() {
-			match fs::create_dir_all(&output_dir) {
-				Ok(_) => {},
-				Err(e) => {
-					panic!("output directory did not exist and cannot be created: {}",
-						e.description());
+		match output_dir {
+			Some(ref o) => {
+				if !fs::metadata(&o).is_ok() {
+					match fs::create_dir_all(&o) {
+						Ok(_) => {},
+						Err(e) => {
+							panic!("output directory did not exist and cannot be created: {}",
+								e.description());
+						}
+					}
 				}
-			}
+			},
+			None => {}
 		}
 		// Assign struct
 		Simulator {
@@ -72,9 +77,12 @@ impl<'a> Simulator {
 			// Set current states
 			current_states = new_states;
 			// Output
-			{
-				let current_states = &current_states;
-				self.output(current_states);
+			match self.output_dir {
+				Some(ref o) => {
+					let current_states = &current_states;
+					self.output(o, current_states);
+				},
+				None => {}
 			}
 			// Increment iteration
 			self.current_iteration += 1;
@@ -100,8 +108,8 @@ impl<'a> Simulator {
 		return states;
 	}
 
-	fn output(&mut self, current_states: &Vec<Vec<Cell>>) {
-		let path = Path::new(&self.output_dir);
+	fn output(& self, output_dir: &String, current_states: &Vec<Vec<Cell>>) {
+		let path = Path::new(&output_dir);
 		let path = path.join(format!("{}.csv", self.current_iteration));
 		let mut file = match fs::File::create(&path) {
 			Err(why) => panic!("couldn't create {}: {}",
