@@ -141,5 +141,5 @@ fn main() {
 	let mut sim = Simulator::new(iterations, output, grid);
 	let sw = Stopwatch::start_new();
 	sim.run_simulation();
-	print!("Time taken: {}", sw.elapsed_ms());
+	println!("Time taken: {}", sw.elapsed_ms());
 }
