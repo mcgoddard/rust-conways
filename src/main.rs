@@ -2,6 +2,7 @@ mod simulation;
 
 extern crate getopts;
 extern crate rand;
+extern crate stopwatch;
 
 use std::env;
 use std::str;
@@ -13,6 +14,7 @@ use getopts::Options;
 use rand::Rng;
 use simulation::CellState;
 use simulation::Simulator;
+use stopwatch::{Stopwatch};
 
 fn print_usage(program: &str, opts: Options) {
 	let brief = format!("Usage: {} OUTPUT_DIR [options]", program);
@@ -137,5 +139,7 @@ fn main() {
 	};
 	// Run simulation
 	let mut sim = Simulator::new(iterations, output, grid);
+	let sw = Stopwatch::start_new();
 	sim.run_simulation();
+	print!("Time taken: {}", sw.elapsed_ms());
 }
