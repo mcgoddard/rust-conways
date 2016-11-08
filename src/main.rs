@@ -106,13 +106,6 @@ fn main() {
 	};
 	// Parse output dir
 	let output = matches.opt_str("o");
-	// let output = if !matches.free.is_empty() {
-	// 	matches.free[0].clone()
-	// } else {
-	// 	println!("Required argument OUTPUT_DIR missing\n");
-	// 	print_usage(&program, opts);
-	// 	return;
-	// };
 	// Create starting states
 	let grid: Vec<Vec<CellState>> = match matches.opt_str("i") {
 		Some(i) => {
