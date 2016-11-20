@@ -64,7 +64,7 @@ impl<'a> Simulator {
 		// Set up first cells
 		let mut current_states = self.create_initial_states();
 		loop {
-			let mut threads = Vec::new();
+			let mut threads = Vec::with_capacity(self.height);
 			// Create new states
 			{
 				// Spawn threads to calculate next states
@@ -74,7 +74,7 @@ impl<'a> Simulator {
 					let row = states[x].clone();
 					let width = self.width.clone();
 					threads.push(thread::spawn(move || {
-						let mut new_row = Vec::new();
+						let mut new_row = Vec::with_capacity(width);
 						for y in 0..width {
 							let cell = row[y].clone();
 							let new_cell = cell.iterate(&states);
@@ -84,7 +84,7 @@ impl<'a> Simulator {
 					}));
 				}
 			}
-			current_states = Vec::new();
+			current_states = Vec::with_capacity(self.height);
 			for child in threads {
 				current_states.push(match child.join() {
 					Ok(row) => row,
@@ -110,9 +110,9 @@ impl<'a> Simulator {
 	}
 
 	fn create_initial_states(&mut self) -> Vec<Vec<Cell>> {
-		let mut states = Vec::new();
+		let mut states = Vec::with_capacity(self.height);
 		for x in 0..self.starting_states.len() {
-			let mut row = Vec::new();
+			let mut row = Vec::with_capacity(self.width);
 			for y in 0..self.starting_states[x].len() {
 				row.push(Cell {
 					state: self.starting_states[x][y].clone(),
