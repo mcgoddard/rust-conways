@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
+use std::thread;
 
 #[derive(Clone)]
 #[derive(Debug)]
@@ -39,9 +40,9 @@ impl<'a> Simulator {
 				if !fs::metadata(&o).is_ok() {
 					match fs::create_dir_all(&o) {
 						Ok(_) => {},
-						Err(e) => {
+						Err(err) => {
 							panic!("output directory did not exist and cannot be created: {}",
-								e.description());
+								err.description());
 						}
 					}
 				}
@@ -63,19 +64,35 @@ impl<'a> Simulator {
 		// Set up first cells
 		let mut current_states = self.create_initial_states();
 		loop {
+			let mut threads = Vec::new();
 			// Create new states
-			let mut new_states = Vec::new();
-			for x in 0..self.height {
-				let mut new_row = Vec::new();
-				for y in 0..self.width {
-					let cell = current_states[x][y].clone();
-					let new_cell = cell.iterate(&current_states);
-					new_row.push(new_cell);
+			{
+				// Spawn threads to calculate next states
+				for x in 0..self.height {
+					// Capture states immutably
+					let states = current_states.clone();
+					let row = states[x].clone();
+					let width = self.width.clone();
+					threads.push(thread::spawn(move || {
+						let mut new_row = Vec::new();
+						for y in 0..width {
+							let cell = row[y].clone();
+							let new_cell = cell.iterate(&states);
+							new_row.push(new_cell);
+						}
+						return new_row;
+					}));
 				}
-				new_states.push(new_row);
 			}
-			// Set current states
-			current_states = new_states;
+			current_states = Vec::new();
+			for child in threads {
+				current_states.push(match child.join() {
+					Ok(row) => row,
+					Err(err) => {
+						panic!("Couldn't compute row: TODO get and print error msg")
+					}
+				});
+			}
 			// Output
 			match self.output_dir {
 				Some(ref o) => {
