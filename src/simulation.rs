@@ -13,16 +13,16 @@ pub enum CellState
 }
 
 pub struct Simulator {
-	iteration_num: u32,
+	iteration_num: usize,
 	height: usize,
 	width: usize,
 	output_dir: Option<String>,
 	starting_states: Vec<Vec<CellState>>,
-	current_iteration: u32,
+	//current_iteration: u32,
 }
 
 impl<'a> Simulator {
-	pub fn new(iteration_num: u32, output_dir: Option<String>, 
+	pub fn new(iteration_num: usize, output_dir: Option<String>, 
 		starting_states: Vec<Vec<CellState>>) -> Simulator {
 		// Check input data
 		if starting_states.len() < 1 {
@@ -56,15 +56,16 @@ impl<'a> Simulator {
 			width: starting_states[0].len(),
 			output_dir: output_dir,
 			starting_states: starting_states,
-			current_iteration: 0,
+			//current_iteration: 0,
 		}
 	}
 
-	pub fn run_simulation(&mut self) {
+	pub fn run_simulation(&self) {
 		// Set up first cells
+		let mut current_iteration: usize = 0;
 		let mut current_states = self.create_initial_states();
 		loop {
-			let mut threads = Vec::with_capacity(self.height);
+			let mut threads = Vec::with_capacity(self.height.clone());
 			// Create new states
 			{
 				// Spawn threads to calculate next states
@@ -97,19 +98,19 @@ impl<'a> Simulator {
 			match self.output_dir {
 				Some(ref o) => {
 					let current_states = &current_states;
-					self.output(o, current_states);
+					self.output(o, current_states, current_iteration);
 				},
 				None => {}
 			}
 			// Increment iteration
-			self.current_iteration += 1;
-			if self.current_iteration == self.iteration_num {
+			current_iteration += 1;
+			if current_iteration == self.iteration_num {
 				break;
 			}
 		}
 	}
 
-	fn create_initial_states(&mut self) -> Vec<Vec<Cell>> {
+	fn create_initial_states(&self) -> Vec<Vec<Cell>> {
 		let mut states = Vec::with_capacity(self.height);
 		for x in 0..self.starting_states.len() {
 			let mut row = Vec::with_capacity(self.width);
@@ -125,9 +126,10 @@ impl<'a> Simulator {
 		return states;
 	}
 
-	fn output(& self, output_dir: &String, current_states: &Vec<Vec<Cell>>) {
+	fn output(& self, output_dir: &String, 
+		current_states: &Vec<Vec<Cell>>, current_iteration: usize) {
 		let path = Path::new(&output_dir);
-		let path = path.join(format!("{}.csv", self.current_iteration));
+		let path = path.join(format!("{}.csv", current_iteration));
 		let mut file = match fs::File::create(&path) {
 			Err(why) => panic!("couldn't create {}: {}",
 								path.display(), why.description()),

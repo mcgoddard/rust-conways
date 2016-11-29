@@ -17,7 +17,7 @@ use simulation::Simulator;
 use stopwatch::{Stopwatch};
 
 fn print_usage(program: &str, opts: Options) {
-	let brief = format!("Usage: {} OUTPUT_DIR [options]", program);
+	let brief = format!("Usage: {} [options]", program);
 	print!("{}", opts.usage(&brief));
 }
 
@@ -99,7 +99,7 @@ fn main() {
 			return;
 		}
 	};
-	let iterations = match iterations_str.parse::<u32>() {
+	let iterations = match iterations_str.parse::<usize>() {
 		Ok(i) => i,
 		Err(err) => {
 			println!("Invalid value for iterations (flag 'i'):\n{}\n", err);
@@ -138,7 +138,7 @@ fn main() {
 		}
 	};
 	// Run simulation
-	let mut sim = Simulator::new(iterations, output, grid);
+	let sim = Simulator::new(iterations, output, grid);
 	let sw = Stopwatch::start_new();
 	sim.run_simulation();
 	println!("Time taken: {}", sw.elapsed_ms());
