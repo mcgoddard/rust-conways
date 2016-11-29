@@ -3,6 +3,7 @@ use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
 use std::thread;
+use std::sync::Arc;
 
 #[derive(Clone)]
 #[derive(Debug)]
@@ -63,50 +64,59 @@ impl<'a> Simulator {
 	pub fn run_simulation(&self) {
 		// Set up first cells
 		let mut current_iteration: usize = 0;
-		let mut current_states = self.create_initial_states();
+		let mut current_states = Arc::new(self.create_initial_states());
 		loop {
-			let mut threads = Vec::with_capacity(self.height.clone());
-			// Create new states
-			{
-				// Spawn threads to calculate next states
-				for x in 0..self.height {
-					// Capture states immutably
-					let states = current_states.clone();
-					let row = states[x].clone();
-					let width = self.width.clone();
-					threads.push(thread::spawn(move || {
-						let mut new_row = Vec::with_capacity(width);
-						for y in 0..width {
-							let cell = row[y].clone();
-							let new_cell = cell.iterate(&states);
-							new_row.push(new_cell);
-						}
-						return new_row;
-					}));
+			current_iteration += 1;
+			current_states = match self.recursive_run(current_states, current_iteration) {
+				Some(s) => s,
+				None => {
+					break;
 				}
 			}
-			current_states = Vec::with_capacity(self.height);
-			for child in threads {
-				current_states.push(match child.join() {
-					Ok(row) => row,
-					Err(err) => {
-						panic!("Couldn't compute row: TODO get and print error msg")
-					}
-				});
-			}
-			// Output
-			match self.output_dir {
-				Some(ref o) => {
-					let current_states = &current_states;
-					self.output(o, current_states, current_iteration);
-				},
-				None => {}
-			}
-			// Increment iteration
-			current_iteration += 1;
-			if current_iteration == self.iteration_num {
-				break;
-			}
+		}
+	}
+
+	fn recursive_run(&self, states: Arc<Vec<Vec<Cell>>>, current_iteration: usize)
+		-> Option<Arc<Vec<Vec<Cell>>>> {
+		let mut threads = Vec::with_capacity(self.height);
+		// Capture states immutably
+		let width = self.width.clone();
+		// Spawn threads to calculate next states
+		for x in 0..self.height {
+			let states = states.clone();
+			threads.push(thread::spawn(move || {
+				let mut new_row = Vec::with_capacity(width);
+				for y in 0..width {
+					let ref row = states[x];
+					let cell = row[y].clone();
+					let new_cell = cell.iterate(&states);
+					new_row.push(new_cell);
+				}
+				return new_row;
+			}));
+		}
+		let mut new_states = Vec::with_capacity(self.height);
+		for child in threads {
+			new_states.push(match child.join() {
+				Ok(row) => row,
+				Err(err) => {
+					panic!("Couldn't compute row: TODO get and print error msg")
+				}
+			});
+		}
+		// Output
+		match self.output_dir {
+			Some(ref o) => {
+				self.output(o, &new_states, current_iteration);
+			},
+			None => {}
+		}
+		// Increment iteration and recurse if not finished
+		if current_iteration != self.iteration_num {
+			Some(Arc::new(new_states))
+		}
+		else {
+			None
 		}
 	}
 
